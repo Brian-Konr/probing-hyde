@@ -39,4 +39,4 @@ export OPENAI = <your key>
 ```
 
 # The Internal State of an LLM Knows When It’s Lying
-The corresponded is from https://github.com/balevinstein/probes
+The corresponded code resource is from https://github.com/balevinstein/probes
