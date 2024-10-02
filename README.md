@@ -37,3 +37,6 @@ export OPENAI = <your key>
   year = {2022}
 }
 ```
+
+# The Internal State of an LLM Knows When It’s Lying
+The corresponded is from https://github.com/balevinstein/probes
