@@ -40,3 +40,27 @@ export OPENAI = <your key>
 
 # The Internal State of an LLM Knows When It’s Lying
 The corresponded code resource is from https://github.com/balevinstein/probes
+
+### About prober
+
+1. Currently , the llm is opt series with size [350m, 1,3b, 2,7b and 6.7b].
+2. Later the embeddings should be stored when generated the statements to avoid secondary calls.
+3. I am wating fot the LLAMA's authorization.
+
+
+### Files:
+
+- **config.josn**: configuretion file.
+- **json.config: **this is the threshold for binary classification
+- **generate_embedding_v3.py**: This is used for get the hidden states of training dataset from true-and-false dataset, prepared to train the probe model.
+- **model.py: **This is for the architecture of prober, currently it is SAPLMAClassifier (MLP from the cited paper)
+- **train_unite_v2.py:** This is to train the prober.
+- **prediction_v6.py**: This is for the token score prediction from the statements.  
+	- Input: 
+		- statement list [stentence1, sentence2, …]
+		- model_name: 350m, 1,3b, 2,7b or 6.7b (for opt model)
+		- layer: The used layer for prober. (For now, it is -4)
+	- Output:  [[word_list1], [word_list2], ...]
+- Folder **probes**: This the trained prober.
+- prediction_results_xx.csv: This is the output sample.
+
