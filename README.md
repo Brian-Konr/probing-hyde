@@ -51,9 +51,9 @@ The corresponded code resource is from https://github.com/balevinstein/probes
 ### Files:
 
 - **config.josn**: configuretion file.
-- **json.config: **this is the threshold for binary classification
+- **json.config**: this is the threshold for binary classification
 - **generate_embedding_v3.py**: This is used for get the hidden states of training dataset from true-and-false dataset, prepared to train the probe model.
-- **model.py: **This is for the architecture of prober, currently it is SAPLMAClassifier (MLP from the cited paper)
+- **model.py**: This is for the architecture of prober, currently it is SAPLMAClassifier (MLP from the cited paper)
 - **train_unite_v2.py:** This is to train the prober.
 - **prediction_v6.py**: This is for the token score prediction from the statements.  
 	- Input: 
