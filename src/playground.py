@@ -23,8 +23,9 @@ response = requests.post(url, json={"message": payload, "gen_config": {
     "do_sample": True
 }}).json()
 
+print(response)
 gen_texts = []
-for gen in response["outputs"]:
+for gen in response:
     gen_texts.append(gen["generated_text"][-1]['content'])
 
-print(gen_texts)
+# print(gen_texts)

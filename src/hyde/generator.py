@@ -1,6 +1,7 @@
 import time
 import openai
 import cohere
+import requests
 
 class Generator:
     def __init__(self, model_name, api_key):
@@ -104,3 +105,44 @@ class CohereGenerator(Generator):
             text = self.parse_response(result)
             texts.append(text)
         return texts
+
+class LlamaGenerator(Generator):
+    def __init__(self, model_name, api_key=None, url="http://localhost:8000/generate", n=8, max_tokens=512, temperature=0.7, p=1, repetition_penalty=0.0, presence_penalty=0.0, stop=['\n\n\n'], wait_till_success=False):
+        super().__init__(model_name, api_key)
+        self.n = n # number of return sequences
+        self.url = url
+        self.max_tokens = max_tokens
+        self.temperature = temperature
+        self.p = p
+        self.repetition_penalty = repetition_penalty
+        self.presence_penalty = presence_penalty
+        self.stop = stop
+        self.wait_till_success = wait_till_success
+
+    @staticmethod
+    def parse_response(response):
+        to_return = []
+        for _, g in enumerate(response):
+            text = g['generated_text'][-1]['content']
+            to_return.append(text)
+        return to_return
+    
+    def generate(self, prompt):
+        get_results = False
+        while not get_results:
+            try:
+                response = requests.post(self.url, json={"message": prompt, "gen_config": {
+                    "max_new_tokens": self.max_tokens,
+                    "temperature": self.temperature,
+                    "top_p": self.p,
+                    "num_return_sequences": self.n,
+                    "do_sample": True,
+                    "repetition_penalty": self.repetition_penalty,
+                }}).json()
+                get_results = True
+            except Exception as e:
+                if self.wait_till_success:
+                    time.sleep(1)
+                else:
+                    raise e
+        return self.parse_response(response)

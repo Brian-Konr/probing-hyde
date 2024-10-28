@@ -28,7 +28,7 @@ async def generate_text(request: ChatRequest):
     try:
         pipeline.generation_config = GenerationConfig(**request.gen_config)
         outputs = pipeline(make_request(request.message))
-        return {"response": outputs}
+        return outputs
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
