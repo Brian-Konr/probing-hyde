@@ -22,18 +22,9 @@ import argparse
 from sklearn.model_selection import train_test_split
 from copy import deepcopy
 
-from model import SAPLMAClassifier  # Ensure this is correctly imported
+from model import SAPLMAClassifier
+from utils import load_config
 
-
-os.environ['HF_HOME'] = '/data1/cache/d12922004'
-
-# Set up logging
-logging.basicConfig(level=logging.INFO, 
-                    format="%(asctime)s - %(levelname)s - %(message)s", 
-                    filename="embedding_extraction.log")
-
-# Check if CUDA is available
-cuda_available = torch.cuda.is_available()
 
 # Get current GPU usage
 def get_free_gpu():
@@ -42,50 +33,14 @@ def get_free_gpu():
 
     try:
         result = subprocess.run(
-            ["nvidia-smi", "--query-gpu=memory.used,index", "--format=csv,nounits,noheader"],
-            stdout=subprocess.PIPE, text=True
+            ["nvidia-smi", "--query-gpu=memory.used,index", "--format=csv,nounits,noheader"], stdout=subprocess.PIPE, text=True
         )
         memory_usage = [int(line.split(",")[0]) for line in result.stdout.strip().split("\n")]
         return memory_usage.index(min(memory_usage))
     except Exception as e:
         logging.error(f"Error detecting GPUs: {e}")
-        return None  
+        return None
 
-# Select device based on availability
-if cuda_available:
-    device_id = get_free_gpu()
-    if device_id is not None:
-        device = torch.device(f"cuda:{device_id}")
-        logging.info(f"Using GPU: cuda:{device_id}")
-    else:
-        device = torch.device("cuda:0")
-        logging.info("Falling back to GPU: cuda:0")
-else:
-    if torch.backends.mps.is_available():
-        device = torch.device("mps")  # If available, choose Apple's MPS
-        logging.info("Using MPS device")
-    else:
-        device = torch.device("cpu")  # If no GPU and MPS, use CPU
-        logging.info("Using CPU")
-
-print(f"Using device: {device}")
-
-# Set random seed for reproducibility
-torch.manual_seed(42)
-if device.type == 'cuda':
-    torch.cuda.manual_seed_all(42)
-
-def load_config(config_file):
-    """Load configuration from JSON file."""
-    try:
-        with open(config_file, 'r') as json_file:
-            return json.load(json_file)
-    except FileNotFoundError:
-        print(f"Config file {config_file} not found.")
-        sys.exit(1)
-    except json.JSONDecodeError:
-        print(f"Error parsing JSON in {config_file}.")
-        sys.exit(1)
 
 def load_datasets(dataset_names, layer, remove_period, input_path, model_name):
     """Load embeddings from csv files."""
@@ -94,7 +49,7 @@ def load_datasets(dataset_names, layer, remove_period, input_path, model_name):
     for dataset_name in dataset_names:
         try:
             path_suffix = "_rmv_period" if remove_period else ""
-            path = input_path / f"embeddings_{dataset_name}{model_name}_{abs(layer)}{path_suffix}.csv"
+            path = input_path / f"embeddings_{dataset_name}_{model_name}_{abs(layer)}{path_suffix}.csv"
             datasets.append(pd.read_csv(path))
             dataset_paths.append(path)
         except FileNotFoundError:
@@ -105,16 +60,20 @@ def load_datasets(dataset_names, layer, remove_period, input_path, model_name):
             sys.exit(1)
     return datasets, dataset_paths
 
+
 def correct_str(str_arr):
     """Converts a string representation of a numpy array into a comma-separated string."""
-    val_to_ret = (str_arr.replace("[array(", "")
-                        .replace("dtype=float32)]", "")
-                        .replace("\n","")
-                        .replace(" ","")
-                        .replace("],","]")
-                        .replace("[","")
-                        .replace("]",""))
+    val_to_ret = (
+        str_arr.replace("[array(", "")
+        .replace("dtype=float32)]", "")
+        .replace("\n", "")
+        .replace(" ", "")
+        .replace("],", "]")
+        .replace("[", "")
+        .replace("]", "")
+    )
     return val_to_ret
+
 
 def compute_roc_auc(y_true, y_scores):
     """Compute ROC AUC."""
@@ -122,35 +81,37 @@ def compute_roc_auc(y_true, y_scores):
     roc_auc = auc(fpr, tpr)
     return roc_auc, fpr, tpr, thresholds
 
+
 def find_optimal_threshold(fpr, tpr, thresholds):
     """Find the optimal threshold that maximizes the difference between TPR and FPR."""
     optimal_idx = np.argmax(tpr - fpr)
     optimal_threshold = thresholds[optimal_idx]
     return optimal_threshold
 
+
 def extract_embeddings_and_labels(dataset):
     """Extract embeddings and labels"""
-    embeddings = np.array([
-        np.fromstring(correct_str(embedding), sep=',') for embedding in dataset['embeddings'].tolist()
-    ])
-    labels = dataset['label'].values
+    embeddings = np.array([np.fromstring(correct_str(embedding), sep=",") for embedding in dataset["embeddings"].tolist()])
+    labels = dataset["label"].values
     return embeddings, labels
+
 
 def save_threshold(threshold_file, probe_name, threshold_value):
     """Save the optimal threshold to a JSON file."""
     try:
         if os.path.exists(threshold_file):
-            with open(threshold_file, 'r') as f:
+            with open(threshold_file, "r") as f:
                 thresholds = json.load(f)
         else:
             thresholds = {}
         thresholds[probe_name] = threshold_value
-        with open(threshold_file, 'w') as f:
+        with open(threshold_file, "w") as f:
             json.dump(thresholds, f, indent=4)
         print(f"Optimal threshold saved to {threshold_file}")
     except Exception as e:
         print(f"Error saving threshold: {e}")
         sys.exit(1)
+
 
 def train_model(model, train_embeddings, train_labels, val_embeddings, val_labels, epochs=5, batch_size=32, learning_rate=0.001):
     """Train the model and evaluate on validation set after each epoch."""
@@ -189,7 +150,7 @@ def train_model(model, train_embeddings, train_labels, val_embeddings, val_label
             epoch_loss += loss.item()
 
         avg_epoch_loss = epoch_loss / len(train_dataloader)
-        print(f'Epoch [{epoch + 1}/{epochs}], Loss: {avg_epoch_loss:.4f}', end='')
+        print(f"Epoch [{epoch + 1}/{epochs}], Loss: {avg_epoch_loss:.4f}", end="")
 
         # Evaluate on validation set
         model.eval()  # Set model to evaluation mode
@@ -208,7 +169,7 @@ def train_model(model, train_embeddings, train_labels, val_embeddings, val_label
 
         val_preds = (val_outputs_cat >= 0.5).astype(int)
         val_accuracy = accuracy_score(val_labels_cat, val_preds)
-        print(f', Validation Accuracy: {val_accuracy:.4f}')
+        print(f", Validation Accuracy: {val_accuracy:.4f}")
 
         # Save the model if it has the best validation accuracy so far
         if val_accuracy > best_val_accuracy:
@@ -220,6 +181,7 @@ def train_model(model, train_embeddings, train_labels, val_embeddings, val_label
         model.load_state_dict(best_model_state)
 
     return model
+
 
 def evaluate_model(model, test_embeddings, test_labels, batch_size=32):
     """Evaluate the model and return predictions and probabilities."""
@@ -251,11 +213,13 @@ def evaluate_model(model, test_embeddings, test_labels, batch_size=32):
     all_labels = torch.cat(all_labels).numpy()
     return avg_loss, all_probs, all_labels
 
+
 def main():
     # Set up logging
     try:
-        logging.basicConfig(filename='classification.log', level=logging.INFO,
-                            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        logging.basicConfig(
+            filename="classification.log", level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        )
         logger = logging.getLogger(__name__)
     except Exception as e:
         print(f"Error setting up logging: {e}")
@@ -263,45 +227,40 @@ def main():
     logger.info("Execution started.")
 
     # Load config
-    config_parameters = load_config("config.json")
+    config_parameters = load_config()
 
     # Argument parsing
     parser = argparse.ArgumentParser(description="Train probes on processed and labeled datasets.")
     parser.add_argument("--model", help="Model name.")
-    parser.add_argument("--layer", type=int, help="Layer for embeddings.")
-    parser.add_argument("--dataset_names", nargs='*', help="Dataset names.")
-    parser.add_argument("--remove_period", action='store_true', help="Remove final period from sentences.")
-    parser.add_argument("--save_probes", action='store_true', help="Save trained probes.")
+    parser.add_argument("--layers", nargs="*", help="List of layers to use for embeddings.")
+    parser.add_argument("--dataset_names", nargs="*", help="Dataset names.")
+    parser.add_argument("--remove_period", action="store_true", help="Remove final period from sentences.")
+    parser.add_argument("--save_probes", action="store_true", help="Save trained probes.")
     args = parser.parse_args()
-    
-    model_name = args.model if args.model is not None else config_parameters["model"]
-    layer = args.layer if args.layer is not None else config_parameters["layer"]
+
+    # model_name = args.model if args.model is not None else config_parameters["model"]
+    model_name = args.model or config_parameters.get("model")
+    layers_to_process = [int(x) for x in (args.layers or config_parameters["layers_to_use"])]
     remove_period = args.remove_period if args.remove_period else config_parameters["remove_period"]
     dataset_names = args.dataset_names if args.dataset_names is not None else config_parameters["list_of_datasets"]
     save_probes = args.save_probes if args.save_probes else config_parameters["save_probes"]
     input_path = Path(config_parameters["processed_dataset_path"])
     probes_path = Path(config_parameters["probes_dir"])
 
+    # Use the single layer
+    layer = layers_to_process[0]
+    sanitized_model_name = model_name.replace("/", "_")
+
     # Load datasets
-    datasets, dataset_paths = load_datasets(dataset_names, layer, remove_period, input_path, model_name)
+    datasets, dataset_paths = load_datasets(dataset_names, layer, remove_period, input_path, sanitized_model_name)
 
     # Combine all datasets into one DataFrame
     combined_dataset = pd.concat(datasets, ignore_index=True)
 
     # Split combined_dataset into train, val, test
-    train_dataset, temp_dataset = train_test_split(
-        combined_dataset,
-        test_size=0.2,
-        random_state=42,
-        stratify=combined_dataset['label']
-    )
+    train_dataset, temp_dataset = train_test_split(combined_dataset, test_size=0.2, random_state=42, stratify=combined_dataset["label"])
 
-    val_dataset, test_dataset = train_test_split(
-        temp_dataset,
-        test_size=0.5,
-        random_state=42,
-        stratify=temp_dataset['label']
-    )
+    val_dataset, test_dataset = train_test_split(temp_dataset, test_size=0.5, random_state=42, stratify=temp_dataset["label"])
 
     # Count the number of samples in each split
     num_train_samples = len(train_dataset)
@@ -313,9 +272,9 @@ def main():
     print(f"Number of samples in test set: {num_test_samples}")
 
     # Display label distribution in each split
-    train_label_counts = train_dataset['label'].value_counts().to_dict()
-    val_label_counts = val_dataset['label'].value_counts().to_dict()
-    test_label_counts = test_dataset['label'].value_counts().to_dict()
+    train_label_counts = train_dataset["label"].value_counts().to_dict()
+    val_label_counts = val_dataset["label"].value_counts().to_dict()
+    test_label_counts = test_dataset["label"].value_counts().to_dict()
 
     print(f"Label distribution in training set: {train_label_counts}")
     print(f"Label distribution in validation set: {val_label_counts}")
@@ -326,10 +285,10 @@ def main():
     val_embeddings, val_labels = extract_embeddings_and_labels(val_dataset)
     test_embeddings, test_labels = extract_embeddings_and_labels(test_dataset)
 
-    # Train the model    
+    # Train the model
     model = SAPLMAClassifier(input_dim=train_embeddings.shape[1]).to(device)
     model = train_model(model, train_embeddings, train_labels, val_embeddings, val_labels)
-        
+
     # Evaluate on validation set to find optimal threshold
     val_loss, val_probs, val_true = evaluate_model(model, val_embeddings, val_labels)
     val_probs_flat = val_probs.ravel()
@@ -345,8 +304,8 @@ def main():
     optimal_threshold_value = float(optimal_threshold)
 
     # Save the optimal threshold to threshold.json
-    probe_name = f"{model_name}_{abs(layer)}_combined"
-    threshold_file = 'threshold.json'
+    probe_name = f"{sanitized_model_name}_{abs(layer)}_combined"
+    threshold_file = "threshold.json"
     save_threshold(threshold_file, probe_name, optimal_threshold_value)
 
     # Evaluate on test set
@@ -360,30 +319,68 @@ def main():
     test_roc_auc, _, _, _ = compute_roc_auc(test_true_flat, test_probs_flat)
 
     # Print results
-    print(f"Layer {layer}: Test Accuracy: {test_accuracy:.4f}, Test AUC: {test_roc_auc:.4f}, Optimal Threshold: {optimal_threshold_value:.4f}")
+    print(
+        f"Layer {layer}: Test Accuracy: {test_accuracy:.4f}, Test AUC: {test_roc_auc:.4f}, Optimal Threshold: {optimal_threshold_value:.4f}"
+    )
 
     # Save the trained model
     if save_probes:
         os.makedirs(probes_path, exist_ok=True)
-        model_path = probes_path / f"{model_name}_{abs(layer)}_combined.pt"
+
+        model_path = probes_path / f"{sanitized_model_name}_{abs(layer)}_combined.pt"
         torch.save(model.state_dict(), model_path)
 
     # Save test predictions and probabilities
     test_dataset_copy = test_dataset.copy()
-    
-    # Remove the 'embeddings' column
-    if 'embeddings' in test_dataset_copy.columns:
-        test_dataset_copy = test_dataset_copy.drop(columns=['embeddings'])
 
-    test_dataset_copy['probability'] = test_probs_flat
-    test_dataset_copy['prediction'] = test_pred_labels
-    test_dataset_copy['probability'] = test_dataset_copy['probability'].round(4)
+    # Remove the 'embeddings' column
+    if "embeddings" in test_dataset_copy.columns:
+        test_dataset_copy = test_dataset_copy.drop(columns=["embeddings"])
+
+    test_dataset_copy["probability"] = test_probs_flat
+    test_dataset_copy["prediction"] = test_pred_labels
+    test_dataset_copy["probability"] = test_dataset_copy["probability"].round(4)
 
     # Save to CSV
-    output_path = input_path / f"embeddings_combined{model_name}_{abs(layer)}_predictions.csv"
+    output_dir = os.path.join(os.getcwd(), "prediction")
+    os.makedirs(output_dir, exist_ok=True)
+    output_path = os.path.join(output_dir, f"{sanitized_model_name}_{abs(layer)}_predictions.csv")
     test_dataset_copy.to_csv(output_path, index=False)
 
     logger.info("Execution completed.")
 
+
 if __name__ == "__main__":
+    os.environ["HF_HOME"] = "/data1/cache/d12922004"
+
+    # Set up logging
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s", filename="embedding_extraction.log")
+
+    # Check if CUDA is available
+    cuda_available = torch.cuda.is_available()
+
+    # Select device based on availability
+    if cuda_available:
+        device_id = get_free_gpu()
+        if device_id is not None:
+            device = torch.device(f"cuda:{device_id}")
+            logging.info(f"Using GPU: cuda:{device_id}")
+        else:
+            device = torch.device("cuda:0")
+            logging.info("Falling back to GPU: cuda:0")
+    else:
+        if torch.backends.mps.is_available():
+            device = torch.device("mps")  # If available, choose Apple's MPS
+            logging.info("Using MPS device")
+        else:
+            device = torch.device("cpu")  # If no GPU and MPS, use CPU
+            logging.info("Using CPU")
+
+    print(f"Using device: {device}")
+
+    # Set random seed for reproducibility
+    torch.manual_seed(42)
+    if device.type == "cuda":
+        torch.cuda.manual_seed_all(42)
+
     main()
