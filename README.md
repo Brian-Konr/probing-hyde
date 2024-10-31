@@ -68,7 +68,8 @@ The corresponded code resource is from https://github.com/balevinstein/probes
 
 # Result
 
-Based on dataset ["cities", "facts", "elements", "animals", "companies", "inventions"]
+Dataset ["cities", "facts", "elements", "animals", "companies", "inventions"]
+Layer: The fourth to last layer of the model (layer = -4)
 
 | Model                     | Acc    | AUC    | Threshold |
 |---------------------------|--------|--------|-----------|
