@@ -69,7 +69,7 @@ def probe(statements, model_name, layer, token=None):
     """
     Main function to extract words and their predictions.
     """
-    config_parameters = load_config("config2.json")
+    config_parameters = load_config()
     probes_path = Path(config_parameters["probes_dir"])
     token =config_parameters.get("token") # huggingface token
     language_model, tokenizer = init_model(model_name, token)
@@ -138,7 +138,7 @@ if __name__ == "__main__":
     os.environ["HF_HOME"] = "/data1/cache/d12922004"
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s", filename="embedding_extraction.log")
 
-    model_name = "meta-llama/Llama-3.1-8B-Instruct"
+    model_name = "facebook/opt-350m"
     layer = -4
     statements = [
         "The capital of Australia is Sydney.",
