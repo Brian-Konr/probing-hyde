@@ -1,0 +1,140 @@
+statement_index,statement,word,true_label,predicted_probability,predicted_label
+0,The capital of Australia is Sydney.,The,0,0.056319553,0
+0,The capital of Australia is Sydney.,capital,0,0.019644124,0
+0,The capital of Australia is Sydney.,of,0,0.025600186,0
+0,The capital of Australia is Sydney.,Australia,0,0.13658808,0
+0,The capital of Australia is Sydney.,is,0,0.3371909,0
+0,The capital of Australia is Sydney.,Sydney.,0,0.870608,1
+1,The Great Wall of China was built entirely during the Qin Dynasty.,The,0,0.056319553,0
+1,The Great Wall of China was built entirely during the Qin Dynasty.,Great,0,0.22418816,0
+1,The Great Wall of China was built entirely during the Qin Dynasty.,Wall,0,0.2706032,0
+1,The Great Wall of China was built entirely during the Qin Dynasty.,of,0,0.007844725,0
+1,The Great Wall of China was built entirely during the Qin Dynasty.,China,0,0.45234385,1
+1,The Great Wall of China was built entirely during the Qin Dynasty.,was,0,0.8174892,1
+1,The Great Wall of China was built entirely during the Qin Dynasty.,built,0,0.7673126,1
+1,The Great Wall of China was built entirely during the Qin Dynasty.,entirely,0,0.6538789,1
+1,The Great Wall of China was built entirely during the Qin Dynasty.,during,0,0.8161337,1
+1,The Great Wall of China was built entirely during the Qin Dynasty.,the,0,0.77572244,1
+1,The Great Wall of China was built entirely during the Qin Dynasty.,Qin,0,0.7279738,1
+1,The Great Wall of China was built entirely during the Qin Dynasty.,Dynasty.,0,0.6745611,1
+2,Albert Einstein invented the light bulb.,Albert,0,0.052760363,0
+2,Albert Einstein invented the light bulb.,Einstein,0,0.3816292,0
+2,Albert Einstein invented the light bulb.,invented,0,0.5045132,1
+2,Albert Einstein invented the light bulb.,the,0,0.5426549,1
+2,Albert Einstein invented the light bulb.,light,0,0.15287778,0
+2,Albert Einstein invented the light bulb.,bulb.,0,0.5091241,1
+3,Sharks are mammals.,Sharks,0,0.14185949,0
+3,Sharks are mammals.,are,0,0.93519413,1
+3,Sharks are mammals.,mammals.,0,0.9758423,1
+4,Mount Everest is located in the United States.,Mount,0,0.05181123,0
+4,Mount Everest is located in the United States.,Everest,0,0.26752684,0
+4,Mount Everest is located in the United States.,is,0,0.68203545,1
+4,Mount Everest is located in the United States.,located,0,0.76333064,1
+4,Mount Everest is located in the United States.,in,0,0.22648196,0
+4,Mount Everest is located in the United States.,the,0,0.5059172,1
+4,Mount Everest is located in the United States.,United,0,0.05653587,0
+4,Mount Everest is located in the United States.,States.,0,0.038328703,0
+5,The moon is larger than Earth.,The,0,0.056319553,0
+5,The moon is larger than Earth.,moon,0,0.041995518,0
+5,The moon is larger than Earth.,is,0,0.43952596,0
+5,The moon is larger than Earth.,larger,0,0.06106553,0
+5,The moon is larger than Earth.,than,0,0.18022826,0
+5,The moon is larger than Earth.,Earth.,0,0.38851467,0
+6,The human body has 200 bones.,The,0,0.056319553,0
+6,The human body has 200 bones.,human,0,0.284038,0
+6,The human body has 200 bones.,body,0,0.3169493,0
+6,The human body has 200 bones.,has,0,0.5832661,1
+6,The human body has 200 bones.,200,0,0.1398893,0
+6,The human body has 200 bones.,bones.,0,0.6909016,1
+7,Tomatoes are classified as root vegetables.,Tomatoes,0,0.04204165,0
+7,Tomatoes are classified as root vegetables.,are,0,0.7465774,1
+7,Tomatoes are classified as root vegetables.,classified,0,0.40883598,0
+7,Tomatoes are classified as root vegetables.,as,0,0.65631187,1
+7,Tomatoes are classified as root vegetables.,root,0,0.1836185,0
+7,Tomatoes are classified as root vegetables.,vegetables.,0,0.4763734,1
+8,The Amazon River flows through South Africa.,The,0,0.056319553,0
+8,The Amazon River flows through South Africa.,Amazon,0,0.36017916,0
+8,The Amazon River flows through South Africa.,River,0,0.015168577,0
+8,The Amazon River flows through South Africa.,flows,0,0.93028474,1
+8,The Amazon River flows through South Africa.,through,0,0.3444846,0
+8,The Amazon River flows through South Africa.,South,0,0.081933446,0
+8,The Amazon River flows through South Africa.,Africa.,0,0.1989636,0
+9,Bats are completely blind.,Bats,0,0.08221781,0
+9,Bats are completely blind.,are,0,0.935697,1
+9,Bats are completely blind.,completely,0,0.8918906,1
+9,Bats are completely blind.,blind.,0,0.47114497,1
+10,Water freezes at 0°C (32°F) under standard atmospheric pressure.,Water,1,0.04989803,0
+10,Water freezes at 0°C (32°F) under standard atmospheric pressure.,freezes,1,0.15869479,0
+10,Water freezes at 0°C (32°F) under standard atmospheric pressure.,at,1,0.4646066,1
+10,Water freezes at 0°C (32°F) under standard atmospheric pressure.,0°C,1,0.30042958,0
+10,Water freezes at 0°C (32°F) under standard atmospheric pressure.,(32°F),1,0.6272482,1
+10,Water freezes at 0°C (32°F) under standard atmospheric pressure.,under,1,0.3828926,0
+10,Water freezes at 0°C (32°F) under standard atmospheric pressure.,standard,1,0.313142,0
+10,Water freezes at 0°C (32°F) under standard atmospheric pressure.,atmospheric,1,0.45115912,0
+10,Water freezes at 0°C (32°F) under standard atmospheric pressure.,pressure.,1,0.42170212,0
+11,"The Eiffel Tower is located in Paris, France.",The,1,0.056319553,0
+11,"The Eiffel Tower is located in Paris, France.",Eiffel,1,0.28057984,0
+11,"The Eiffel Tower is located in Paris, France.",Tower,1,0.44205338,0
+11,"The Eiffel Tower is located in Paris, France.",is,1,0.97350526,1
+11,"The Eiffel Tower is located in Paris, France.",located,1,0.97146183,1
+11,"The Eiffel Tower is located in Paris, France.",in,1,0.97519374,1
+11,"The Eiffel Tower is located in Paris, France.","Paris,",1,0.9965197,1
+11,"The Eiffel Tower is located in Paris, France.",France.,1,0.9979539,1
+12,The chemical symbol for water is H₂O.,The,1,0.056319553,0
+12,The chemical symbol for water is H₂O.,chemical,1,0.3515589,0
+12,The chemical symbol for water is H₂O.,symbol,1,0.43411648,0
+12,The chemical symbol for water is H₂O.,for,1,0.39195865,0
+12,The chemical symbol for water is H₂O.,water,1,0.3308465,0
+12,The chemical symbol for water is H₂O.,is,1,0.5057648,1
+12,The chemical symbol for water is H₂O.,H₂O.,1,0.5837856,1
+13,Humans have 206 bones in their bodies.,Humans,1,0.048486497,0
+13,Humans have 206 bones in their bodies.,have,1,0.5685726,1
+13,Humans have 206 bones in their bodies.,206,1,0.49170348,1
+13,Humans have 206 bones in their bodies.,bones,1,0.6052909,1
+13,Humans have 206 bones in their bodies.,in,1,0.8590643,1
+13,Humans have 206 bones in their bodies.,their,1,0.8980102,1
+13,Humans have 206 bones in their bodies.,bodies.,1,0.7229177,1
+14,Venus is the second planet from the Sun.,Venus,1,0.055019617,0
+14,Venus is the second planet from the Sun.,is,1,0.52260816,1
+14,Venus is the second planet from the Sun.,the,1,0.48084223,1
+14,Venus is the second planet from the Sun.,second,1,0.4800521,1
+14,Venus is the second planet from the Sun.,planet,1,0.5287388,1
+14,Venus is the second planet from the Sun.,from,1,0.5189305,1
+14,Venus is the second planet from the Sun.,the,1,0.5374723,1
+14,Venus is the second planet from the Sun.,Sun.,1,0.6806286,1
+15,The Pacific Ocean is the largest ocean on Earth.,The,1,0.056319553,0
+15,The Pacific Ocean is the largest ocean on Earth.,Pacific,1,0.08059478,0
+15,The Pacific Ocean is the largest ocean on Earth.,Ocean,1,0.026028259,0
+15,The Pacific Ocean is the largest ocean on Earth.,is,1,0.4698656,1
+15,The Pacific Ocean is the largest ocean on Earth.,the,1,0.66018355,1
+15,The Pacific Ocean is the largest ocean on Earth.,largest,1,0.5419195,1
+15,The Pacific Ocean is the largest ocean on Earth.,ocean,1,0.88168633,1
+15,The Pacific Ocean is the largest ocean on Earth.,on,1,0.8342573,1
+15,The Pacific Ocean is the largest ocean on Earth.,Earth.,1,0.9031293,1
+16,Whales are mammals.,Whales,1,0.041054238,0
+16,Whales are mammals.,are,1,0.9731409,1
+16,Whales are mammals.,mammals.,1,0.9814461,1
+17,The Pythagorean theorem states that a² + b² = c² for right-angled triangles.,The,1,0.056319565,0
+17,The Pythagorean theorem states that a² + b² = c² for right-angled triangles.,Pythagorean,1,0.35300055,0
+17,The Pythagorean theorem states that a² + b² = c² for right-angled triangles.,theorem,1,0.61357903,1
+17,The Pythagorean theorem states that a² + b² = c² for right-angled triangles.,states,1,0.8593661,1
+17,The Pythagorean theorem states that a² + b² = c² for right-angled triangles.,that,1,0.9269932,1
+17,The Pythagorean theorem states that a² + b² = c² for right-angled triangles.,a²,1,0.25347152,0
+17,The Pythagorean theorem states that a² + b² = c² for right-angled triangles.,+,1,0.82121444,1
+17,The Pythagorean theorem states that a² + b² = c² for right-angled triangles.,b²,1,0.6956061,1
+17,The Pythagorean theorem states that a² + b² = c² for right-angled triangles.,=,1,0.70913553,1
+17,The Pythagorean theorem states that a² + b² = c² for right-angled triangles.,c²,1,0.6896288,1
+17,The Pythagorean theorem states that a² + b² = c² for right-angled triangles.,for,1,0.911343,1
+17,The Pythagorean theorem states that a² + b² = c² for right-angled triangles.,right-angled,1,0.7195814,1
+17,The Pythagorean theorem states that a² + b² = c² for right-angled triangles.,triangles.,1,0.78516006,1
+18,"The primary colors are red, blue, and yellow.",The,1,0.056319553,0
+18,"The primary colors are red, blue, and yellow.",primary,1,0.49652353,1
+18,"The primary colors are red, blue, and yellow.",colors,1,0.40053573,0
+18,"The primary colors are red, blue, and yellow.",are,1,0.56884617,1
+18,"The primary colors are red, blue, and yellow.","red,",1,0.81564915,1
+18,"The primary colors are red, blue, and yellow.","blue,",1,0.7934511,1
+18,"The primary colors are red, blue, and yellow.",and,1,0.6284047,1
+18,"The primary colors are red, blue, and yellow.",yellow.,1,0.5449656,1
+19,Birds lay eggs.,Birds,1,0.07033641,0
+19,Birds lay eggs.,lay,1,0.8803093,1
+19,Birds lay eggs.,eggs.,1,0.6753992,1
