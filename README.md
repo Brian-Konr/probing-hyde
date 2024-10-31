@@ -43,9 +43,9 @@ The corresponded code resource is from https://github.com/balevinstein/probes
 
 ### About prober
 
-1. Currently , the llm is opt series with size [350m, 1,3b, 2,7b and 6.7b].
+1. The optional models currently including facebook/opt-350m/1.3b/opt-2.7b/6.7b, meta-llama/Llama-3.2-1B-Instruct (3B), meta-llama/Llama-3.1-8B-Instruct
 2. Later the embeddings should be stored when generated the statements to avoid secondary calls.
-3. I am wating fot the LLAMA's authorization.
+3. For HyDE, you can use the **prediction_function.py** to get the token-level score.
 
 
 ### Files:
