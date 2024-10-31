@@ -65,3 +65,17 @@ The corresponded code resource is from https://github.com/balevinstein/probes
 - Folder **probes**: This the trained probers.
 - prediction_results_xx.csv: This is the output sample outputed by prediction.py.
 
+
+# Result
+
+Based on dataset ["cities", "facts", "elements", "animals", "companies", "inventions"]
+
+| Model                     | Acc    | AUC    | Threshold |
+|---------------------------|--------|--------|-----------|
+| opt-350m                  | 0.7867 | 0.8931 | 0.5342    |
+| opt-1.3b                  | 0.8018 | 0.9161 | 0.6019    |
+| opt-2.7b                  | 0.8189 | 0.9197 | 0.4521    |
+| opt-6.7b                  | 0.8230 | 0.9303 | 0.4796    |
+| llama-3.2-1b-Instruct     | 0.8243 | 0.9284 | 0.5017    |
+| llama-3.2-3b-Instruct     | 0.8708 | 0.9606 | 0.5345    |
+| llama-3.1-8b-Instruct     | 0.9064 | 0.9755 | 0.5003    |
