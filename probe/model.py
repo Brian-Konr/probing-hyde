@@ -31,34 +31,3 @@ class SAPLMAClassifier(nn.Module):
         out = self.fc4(out)
         out = self.sigmoid(out)
         return out
-
-
-class AttentionMLP(nn.Module):
-    """
-    attention 
-    """
-    def __init__(self, input_dim=4096):
-        super(AttentionMLP, self).__init__()
-        self.fc1 = nn.Linear(input_dim, 256)
-        self.fc2 = nn.Linear(256, 128)
-        self.fc3 = nn.Linear(128, 64)
-        self.out = nn.Linear(64, 1)
-        self.relu = nn.ReLU()
-        self.sigmoid = nn.Sigmoid()
-
-        # 注意力层
-        self.attention = nn.MultiheadAttention(embed_dim=256, num_heads=8)
-
-    def forward(self, x):
-        """
-        """
-        x = self.relu(self.fc1(x))
-
-        # 将输入通过注意力层
-        x = x.unsqueeze(0)  # 为适配注意力机制，将 x 的维度变为 (1, batch_size, embed_dim)
-        attn_output, _ = self.attention(x, x, x)
-        x = attn_output.squeeze(0)  # 去掉多余的维度
-
-        x = self.relu(self.fc2(x))
-        x = self.relu(self.fc3(x))
-        return self.sigmoid(self.out(x))
