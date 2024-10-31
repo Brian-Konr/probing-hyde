@@ -1,0 +1,53 @@
+2024-10-28 16:37:37,279 - main - ERROR - Error in generate_text: `penalty` has to be a strictly positive float, but is 0.0
+Traceback (most recent call last):
+  File "/home/guest/r12922050/GitHub/probing-hyde/src/main.py", line 36, in generate_text
+    outputs = pipeline(make_request(request.message))
+  File "/home/guest/r12922050/miniconda3/envs/hyde-probe/lib/python3.10/site-packages/transformers/pipelines/text_generation.py", line 267, in __call__
+    return super().__call__(Chat(text_inputs), **kwargs)
+  File "/home/guest/r12922050/miniconda3/envs/hyde-probe/lib/python3.10/site-packages/transformers/pipelines/base.py", line 1302, in __call__
+    return self.run_single(inputs, preprocess_params, forward_params, postprocess_params)
+  File "/home/guest/r12922050/miniconda3/envs/hyde-probe/lib/python3.10/site-packages/transformers/pipelines/base.py", line 1309, in run_single
+    model_outputs = self.forward(model_inputs, **forward_params)
+  File "/home/guest/r12922050/miniconda3/envs/hyde-probe/lib/python3.10/site-packages/transformers/pipelines/base.py", line 1209, in forward
+    model_outputs = self._forward(model_inputs, **forward_params)
+  File "/home/guest/r12922050/miniconda3/envs/hyde-probe/lib/python3.10/site-packages/transformers/pipelines/text_generation.py", line 370, in _forward
+    generated_sequence = self.model.generate(input_ids=input_ids, attention_mask=attention_mask, **generate_kwargs)
+  File "/home/guest/r12922050/miniconda3/envs/hyde-probe/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/guest/r12922050/miniconda3/envs/hyde-probe/lib/python3.10/site-packages/transformers/generation/utils.py", line 2108, in generate
+    prepared_logits_processor = self._get_logits_processor(
+  File "/home/guest/r12922050/miniconda3/envs/hyde-probe/lib/python3.10/site-packages/transformers/generation/utils.py", line 901, in _get_logits_processor
+    processors.append(RepetitionPenaltyLogitsProcessor(penalty=generation_config.repetition_penalty))
+  File "/home/guest/r12922050/miniconda3/envs/hyde-probe/lib/python3.10/site-packages/transformers/generation/logits_process.py", line 347, in __init__
+    raise ValueError(f"`penalty` has to be a strictly positive float, but is {penalty}")
+ValueError: `penalty` has to be a strictly positive float, but is 0.0
+2024-10-30 16:54:53,079 - main - ERROR - Error in generate_text: 'GenerateDecoderOnlyOutput' object has no attribute 'shape'
+Traceback (most recent call last):
+  File "/home/guest/r12922050/GitHub/probing-hyde/hyde-base/main.py", line 36, in generate_text
+    outputs = pipeline(make_request(request.message))
+  File "/home/guest/r12922050/miniconda3/envs/hyde-probe/lib/python3.10/site-packages/transformers/pipelines/text_generation.py", line 267, in __call__
+    return super().__call__(Chat(text_inputs), **kwargs)
+  File "/home/guest/r12922050/miniconda3/envs/hyde-probe/lib/python3.10/site-packages/transformers/pipelines/base.py", line 1302, in __call__
+    return self.run_single(inputs, preprocess_params, forward_params, postprocess_params)
+  File "/home/guest/r12922050/miniconda3/envs/hyde-probe/lib/python3.10/site-packages/transformers/pipelines/base.py", line 1309, in run_single
+    model_outputs = self.forward(model_inputs, **forward_params)
+  File "/home/guest/r12922050/miniconda3/envs/hyde-probe/lib/python3.10/site-packages/transformers/pipelines/base.py", line 1209, in forward
+    model_outputs = self._forward(model_inputs, **forward_params)
+  File "/home/guest/r12922050/miniconda3/envs/hyde-probe/lib/python3.10/site-packages/transformers/pipelines/text_generation.py", line 371, in _forward
+    out_b = generated_sequence.shape[0]
+AttributeError: 'GenerateDecoderOnlyOutput' object has no attribute 'shape'
+2024-10-31 13:02:16,577 - main - ERROR - Error in generate_text: 'GenerateDecoderOnlyOutput' object has no attribute 'shape'
+Traceback (most recent call last):
+  File "/home/guest/r12922050/GitHub/probing-hyde/hyde-base/main.py", line 36, in generate_text
+    outputs = pipeline(make_request(request.message))
+  File "/home/guest/r12922050/miniconda3/envs/hyde-probe/lib/python3.10/site-packages/transformers/pipelines/text_generation.py", line 267, in __call__
+    return super().__call__(Chat(text_inputs), **kwargs)
+  File "/home/guest/r12922050/miniconda3/envs/hyde-probe/lib/python3.10/site-packages/transformers/pipelines/base.py", line 1302, in __call__
+    return self.run_single(inputs, preprocess_params, forward_params, postprocess_params)
+  File "/home/guest/r12922050/miniconda3/envs/hyde-probe/lib/python3.10/site-packages/transformers/pipelines/base.py", line 1309, in run_single
+    model_outputs = self.forward(model_inputs, **forward_params)
+  File "/home/guest/r12922050/miniconda3/envs/hyde-probe/lib/python3.10/site-packages/transformers/pipelines/base.py", line 1209, in forward
+    model_outputs = self._forward(model_inputs, **forward_params)
+  File "/home/guest/r12922050/miniconda3/envs/hyde-probe/lib/python3.10/site-packages/transformers/pipelines/text_generation.py", line 371, in _forward
+    out_b = generated_sequence.shape[0]
+AttributeError: 'GenerateDecoderOnlyOutput' object has no attribute 'shape'
