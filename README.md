@@ -5,7 +5,7 @@ This is code repository for the paper: [HyDE: Precise Zero-Shot Dense Retrieval 
 **HyDE** zero-shot instructs GPT3 to generate a fictional document and re-encodes it with unsupervised retriever Contriever to search in its embedding space.
 HyDE significantly outperforms Contriever across tasks and languages and it does not require any human labeled relevance judgement.
 
-![approach](approach.png)
+![approach](hyde-base/approach.png)
 
 ## Steps to run the code
 
