@@ -146,6 +146,7 @@ def probe_generation(probe_path, probe_name, model, tokenizer, results):
             probe_models_cache[probe_path] = probe_model
         
         threshold_file = "threshold.json"
+        probe_name = probe_name[:-3]
         threshold = load_threshold(threshold_file, probe_name)
         
         # Prepare embeddings for batch processing
