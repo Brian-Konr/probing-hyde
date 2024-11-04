@@ -32,8 +32,7 @@ def make_request(message):
 @app.post("/generate")
 async def generate_text(request: ChatRequest):
     try:
-        pipeline.generation_config = GenerationConfig(**request.gen_config)
-        outputs = pipeline(make_request(request.message))
+        outputs = pipeline(make_request(request.message), **request.gen_config)
         return outputs
     except Exception as e:
         logger.exception(f"Error in generate_text: {str(e)}")
