@@ -3,6 +3,7 @@ from pyserini.search import get_topics, get_qrels
 from tqdm import tqdm
 import json
 from argparse import ArgumentParser
+import os
 
 parser = ArgumentParser()
 parser.add_argument("--topic-name", type=str, default="dl19-passage")
@@ -46,8 +47,10 @@ for qid in tqdm(topics, desc=f"Generating pseudo-docs for {args.topic_name}"):
         "word_predictions": word_predictions
     })
 
+directory = f"pseudo-docs/{args.topic_name}"
+os.makedirs(directory, exist_ok=True)
 
-with open(f"pseudo-docs/{args.topic_name}/1.json", "w") as f:
+with open(f"{directory}/1.json", "w") as f:
     json.dump(gen_pseudo_docs, f)
 
 print("Done!")
