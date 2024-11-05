@@ -26,13 +26,15 @@ def get_embedding_from_generation(message, gen_config, model, tokenizer, device,
     - device: The device to perform computations on.
 
     Returns:
-    - dict: Generated text and word embeddings.
+    - dict: Generated text and word embeddings (excluding the input message).
     """
     try:
         # Tokenize the input message
         inputs = tokenizer(message, return_tensors="pt").to(device)
+        input_len = inputs['input_ids'].size(1)
+        logging.info(f"Input token length: {input_len}")
         
-        # Generate text with hidden states
+        # Generate text (includes input and generated tokens)
         with torch.no_grad():
             outputs = model.generate(
                 **inputs,
@@ -41,10 +43,12 @@ def get_embedding_from_generation(message, gen_config, model, tokenizer, device,
                 **gen_config
             )
         
-        # Extract generated text
+        # Extract generated token IDs (includes input)
         generated_ids = outputs.sequences[0]  # Shape: (seq_len,)
-        generated_text = tokenizer.decode(generated_ids, skip_special_tokens=True)
+        generated_text_full = tokenizer.decode(generated_ids, skip_special_tokens=True)
+        logging.info(f"Full generated text: {generated_text_full}")
         
+        # Re-run the model to get hidden states for the entire sequence
         with torch.no_grad():
             model_outputs = model(generated_ids.unsqueeze(0), output_hidden_states=True)
         
@@ -52,15 +56,26 @@ def get_embedding_from_generation(message, gen_config, model, tokenizer, device,
         all_layer_hidden_states = model_outputs.hidden_states  # Tuple of (num_layers + 1, batch_size, seq_len, hidden_size)
         desired_layer_hidden_states = all_layer_hidden_states[layer]  # Shape: (batch_size, seq_len, hidden_size)
         hidden_states = desired_layer_hidden_states[0]  # Shape: (seq_len, hidden_size)
+        logging.info(f"Hidden states shape after extraction: {hidden_states.shape}")
         
         # Convert generated token IDs to tokens
         tokens = tokenizer.convert_ids_to_tokens(generated_ids)
         seq_len = len(tokens)
-        logging.info(f"Number of tokens: {seq_len}")
+        logging.info(f"Total number of tokens: {seq_len}")
 
         if hidden_states.size(0) != seq_len:
             logging.error(f"Mismatch between hidden_states size {hidden_states.size(0)} and tokens length {seq_len}")
             raise ValueError(f"Mismatch between hidden_states size {hidden_states.size(0)} and tokens length {seq_len}")
+
+        # Exclude input tokens to get only the generated part
+        generated_ids_only = generated_ids[input_len:]
+        hidden_states_only = hidden_states[input_len:]
+        tokens_only = tokens[input_len:]
+        logging.info(f"Number of generated tokens: {len(tokens_only)}")
+        
+        # Decode only the generated tokens
+        generated_text = tokenizer.decode(generated_ids_only, skip_special_tokens=True)
+        logging.info(f"Generated text (excluding input): {generated_text}")
 
         # Determine prefix based on tokenizer type
         if hasattr(tokenizer, "word_tokenizer"):
@@ -68,12 +83,12 @@ def get_embedding_from_generation(message, gen_config, model, tokenizer, device,
         else:
             prefix = "Ġ"
 
-        # Traverse tokens to aggregate word embeddings
+        # Traverse generated tokens to aggregate word embeddings
         results = []
         current_word_tokens = []
         current_word_embeddings = []
 
-        for j, token in enumerate(tokens):
+        for j, token in enumerate(tokens_only):
             clean_token = token.lstrip(prefix)
             if prefix and token.startswith(prefix) and current_word_tokens:
                 # Aggregate embeddings for the previous word
@@ -81,11 +96,11 @@ def get_embedding_from_generation(message, gen_config, model, tokenizer, device,
                 word_text = tokenizer.convert_tokens_to_string(current_word_tokens)
                 results.append({"word": word_text, "embedding": word_embedding.cpu().numpy()})
                 current_word_tokens = [clean_token]
-                current_word_embeddings = [hidden_states[j]]
+                current_word_embeddings = [hidden_states_only[j]]
             else:
                 # Continue building the current word
                 current_word_tokens.append(clean_token)
-                current_word_embeddings.append(hidden_states[j])
+                current_word_embeddings.append(hidden_states_only[j])
 
         # Process the last word
         if current_word_tokens:
