@@ -1,43 +1,53 @@
 import requests
-# from pyserini.search import get_topics, get_qrels
+from pyserini.search import get_topics, get_qrels
 from tqdm import tqdm
 import json
+from argparse import ArgumentParser
 
-url = "http://localhost:8000/generate"
-topic_name = "dl19-passage"
+parser = ArgumentParser()
+parser.add_argument("--topic-name", type=str, default="dl19-passage")
+parser.add_argument("--max-new-tokens", type=int, default=128)
+parser.add_argument("--api-url", type=str, default="http://localhost:8000/generate")
+parser.add_argument("--use-few-shot", type=bool, default=False)
+parser.add_argument("--few-shot-path", type=str, default="")
 
-# topics = get_topics(topic_name)
-with open("dl19-passage_topic_info.json", "r") as f:
-    topics = json.load(f)
+args = parser.parse_args()
 
-gen_config = {
-    "max_new_tokens": 512,
-    "temperature": 0.7,
-    "top_p": 1,
-    "do_sample": True,
-    "num_return_sequences": 8,
-}
-
-gen_pseudo_docs = {"gen_config": gen_config}
+topics = get_topics(args.topic_name)
+url = args.api_url
+gen_config = {"max_new_tokens": args.max_new_tokens}
+gen_pseudo_docs = {"gen_config": gen_config, "topics": []}
 
 
-for topic in tqdm(topics, desc=f"Generating pseudo-docs for {topic_name}"):
-    query = topic["query"]
-    prompt = f"""Please write a passage to answer the question
-Question: {query}
-Passage:"""
+def load_few_shot_examples():
+    with open(args.few_shot_path) as f:
+        data = json.load(f)
+    composed_prompt = ""
+    for example in data:
+        composed_prompt += f"Query: {example['query']}\n"
+        composed_prompt += f"Passage: {example['passage']}\n\n"
+    return composed_prompt
+
+for qid in tqdm(topics, desc=f"Generating pseudo-docs for {args.topic_name}"):
+    query = topics[qid]["title"]
+    prompt = f"Write a passage that answers the given query:\n"
+    if args.use_few_shot:
+        prompt += load_few_shot_examples()
+    prompt += f"Query: {query}\n"
 
     response = requests.post(url, json={"message": prompt, "gen_config": gen_config}).json()
     
-    ans = [] # candidate passages
-    for res in response:
-        content = res["generated_text"][-1]["content"] # -1 indicates the last entry in generated_text, which is the assistant's response
-        ans.append(content)
-    topic["generated_passages"] = ans
+    passage = response["generated_text"]
+    word_predictions = response["word_predictions"]
+    gen_pseudo_docs["topics"].append({
+        "qid": qid,
+        "query": query,
+        "passage": passage,
+        "word_predictions": word_predictions
+    })
 
 
-gen_pseudo_docs["topics"] = topics
-with open(f"{topic_name}_pseudo_docs_8rep.json", "w") as f:
+with open(f"pseudo-docs/{args.topic_name}/1.json", "w") as f:
     json.dump(gen_pseudo_docs, f)
 
 print("Done!")

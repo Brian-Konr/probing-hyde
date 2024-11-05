@@ -51,3 +51,33 @@ Traceback (most recent call last):
   File "/home/guest/r12922050/miniconda3/envs/hyde-probe/lib/python3.10/site-packages/transformers/pipelines/text_generation.py", line 371, in _forward
     out_b = generated_sequence.shape[0]
 AttributeError: 'GenerateDecoderOnlyOutput' object has no attribute 'shape'
+2024-11-05 10:07:41,341 - root - ERROR - Error in get_embedding_from_generation: `temperature` (=0) has to be a strictly positive float, otherwise your next token scores will be invalid.
+Traceback (most recent call last):
+  File "/home/guest/r12922050/GitHub/probing-hyde/hyde-base/prediction_function.py", line 37, in get_embedding_from_generation
+    outputs = model.generate(
+  File "/home/guest/r12922050/miniconda3/envs/hyde-probe/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/guest/r12922050/miniconda3/envs/hyde-probe/lib/python3.10/site-packages/transformers/generation/utils.py", line 2108, in generate
+    prepared_logits_processor = self._get_logits_processor(
+  File "/home/guest/r12922050/miniconda3/envs/hyde-probe/lib/python3.10/site-packages/transformers/generation/utils.py", line 1036, in _get_logits_processor
+    processors.append(TemperatureLogitsWarper(generation_config.temperature))
+  File "/home/guest/r12922050/miniconda3/envs/hyde-probe/lib/python3.10/site-packages/transformers/generation/logits_process.py", line 298, in __init__
+    raise ValueError(except_msg)
+ValueError: `temperature` (=0) has to be a strictly positive float, otherwise your next token scores will be invalid.
+2024-11-05 10:07:41,348 - main - ERROR - Error in generate_text: `temperature` (=0) has to be a strictly positive float, otherwise your next token scores will be invalid.
+Traceback (most recent call last):
+  File "/home/guest/r12922050/GitHub/probing-hyde/hyde-base/main.py", line 74, in generate_text
+    results = get_embedding_from_generation(
+  File "/home/guest/r12922050/GitHub/probing-hyde/hyde-base/prediction_function.py", line 103, in get_embedding_from_generation
+    raise e
+  File "/home/guest/r12922050/GitHub/probing-hyde/hyde-base/prediction_function.py", line 37, in get_embedding_from_generation
+    outputs = model.generate(
+  File "/home/guest/r12922050/miniconda3/envs/hyde-probe/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/guest/r12922050/miniconda3/envs/hyde-probe/lib/python3.10/site-packages/transformers/generation/utils.py", line 2108, in generate
+    prepared_logits_processor = self._get_logits_processor(
+  File "/home/guest/r12922050/miniconda3/envs/hyde-probe/lib/python3.10/site-packages/transformers/generation/utils.py", line 1036, in _get_logits_processor
+    processors.append(TemperatureLogitsWarper(generation_config.temperature))
+  File "/home/guest/r12922050/miniconda3/envs/hyde-probe/lib/python3.10/site-packages/transformers/generation/logits_process.py", line 298, in __init__
+    raise ValueError(except_msg)
+ValueError: `temperature` (=0) has to be a strictly positive float, otherwise your next token scores will be invalid.
