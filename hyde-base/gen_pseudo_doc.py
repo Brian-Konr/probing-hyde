@@ -16,7 +16,10 @@ args = parser.parse_args()
 
 topics = get_topics(args.topic_name)
 url = args.api_url
-gen_config = {"max_new_tokens": args.max_new_tokens}
+gen_config = {
+    "max_new_tokens": args.max_new_tokens,
+    "do_sample": False
+}
 gen_pseudo_docs = {"gen_config": gen_config, "topics": []}
 
 
@@ -31,10 +34,14 @@ def load_few_shot_examples():
 
 for qid in tqdm(topics, desc=f"Generating pseudo-docs for {args.topic_name}"):
     query = topics[qid]["title"]
-    prompt = f"Write a passage that answers the given query:\n"
+    prompt = f"You will be given a query, and you need to generate a passage that answers the query. The passage should be informative and relevant to the query\n"
     if args.use_few_shot:
+        prompt += "Here are some examples of queries and passages:\n"
         prompt += load_few_shot_examples()
+    
+    prompt += f"Please generate a passage that answers the following query:\n"
     prompt += f"Query: {query}\n"
+    prompt += f"Passage:"
 
     response = requests.post(url, json={"message": prompt, "gen_config": gen_config}).json()
     
