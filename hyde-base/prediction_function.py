@@ -29,6 +29,13 @@ def get_embedding_from_generation(message, gen_config, model, tokenizer, device,
     - dict: Generated text and word embeddings (excluding the input message).
     """
     try:
+        if tokenizer.eos_token_id is None:
+            if tokenizer.pad_token_id is not None:
+                tokenizer.eos_token_id = tokenizer.pad_token_id
+        else:
+            tokenizer.eos_token = "<EOS>"
+            tokenizer.eos_token_id = 50256
+            
         # Tokenize the input message
         inputs = tokenizer(message, return_tensors="pt").to(device)
         input_len = inputs['input_ids'].size(1)
@@ -38,9 +45,10 @@ def get_embedding_from_generation(message, gen_config, model, tokenizer, device,
         with torch.no_grad():
             outputs = model.generate(
                 **inputs,
-                output_hidden_states=False,
-                return_dict_in_generate=True,
-                **gen_config
+                **gen_config,  # Pass gen_config first
+                return_dict_in_generate=True,  # Override with desired value
+                output_hidden_states=False, # Ensure output_hidden_states is set appropriately
+                pad_token_id=tokenizer.eos_token_id
             )
         
         # Extract generated token IDs (includes input)
