@@ -29,7 +29,6 @@ def get_embedding_from_generation(message, gen_config, model, tokenizer, device,
     - dict: Generated text and word embeddings (excluding the input message).
     """
     try:
-        
         # Tokenize the input message
         inputs = tokenizer(message, return_tensors="pt").to(device)
         input_len = inputs['input_ids'].size(1)
@@ -92,25 +91,25 @@ def get_embedding_from_generation(message, gen_config, model, tokenizer, device,
         for j, token in enumerate(tokens_only):
             # Handle tokens with newline characters
             if '\n' in token:
+                # Split the token on newline character
                 sub_tokens = token.split('\n')
-                for sub_token in sub_tokens:
+                sub_token_embeddings = hidden_states_only[j].unsqueeze(0).repeat(len(sub_tokens), 1)
+                for k, sub_token in enumerate(sub_tokens):
                     clean_sub_token = sub_token.lstrip(prefix)
                     if not clean_sub_token:
                         continue  # Skip if empty after stripping
 
-                    if prefix and sub_token.startswith(prefix) and current_word_tokens:
-                        # Aggregate embeddings for the previous word
+                    # If current word tokens are not empty, finalize the current word
+                    if current_word_tokens:
                         word_embedding = torch.stack(current_word_embeddings).mean(dim=0)
                         word_text = tokenizer.convert_tokens_to_string(current_word_tokens)
                         results.append({"word": word_text, "embedding": word_embedding.cpu().numpy()})
+                        current_word_tokens = []
+                        current_word_embeddings = []
 
-                        # Start new word
-                        current_word_tokens = [clean_sub_token]
-                        current_word_embeddings = [hidden_states_only[j]]
-                    else:
-                        # Continue building the current word
-                        current_word_tokens.append(clean_sub_token)
-                        current_word_embeddings.append(hidden_states_only[j])
+                    # Start new word with the sub_token
+                    current_word_tokens = [clean_sub_token]
+                    current_word_embeddings = [sub_token_embeddings[k]]
             else:
                 clean_token = token.lstrip(prefix)
                 if prefix and token.startswith(prefix) and current_word_tokens:
