@@ -8,10 +8,15 @@ Created on Tue Oct 29 17:31:39 2024
 import os
 import torch
 import numpy as np
+import string
+
 from pathlib import Path
 import logging
 from model import SAPLMAClassifier
 from utils import init_model, load_config, get_probe_path, load_threshold
+
+def is_punctuation(token):
+    return all(char in string.punctuation for char in token)
 
 def get_embedding_from_generation(message, gen_config, model, tokenizer, device, layer=-4):
     """
@@ -90,25 +95,52 @@ def get_embedding_from_generation(message, gen_config, model, tokenizer, device,
             prefix = "▁"
         else:
             prefix = "Ġ"
+        
 
         # Traverse generated tokens to aggregate word embeddings
         results = []
         current_word_tokens = []
         current_word_embeddings = []
 
+        # for j, token in enumerate(tokens_only):
+        #     clean_token = token.lstrip(prefix)
+        #     if prefix and token.startswith(prefix) and current_word_tokens:
+        #         # Aggregate embeddings for the previous word
+        #         word_embedding = torch.stack(current_word_embeddings).mean(dim=0)
+        #         word_text = tokenizer.convert_tokens_to_string(current_word_tokens)
+        #         results.append({"word": word_text, "embedding": word_embedding.cpu().numpy()})
+        #         current_word_tokens = [clean_token]
+        #         current_word_embeddings = [hidden_states_only[j]]
+        #     else:
+        #         # Continue building the current word
+        #         current_word_tokens.append(clean_token)
+        #         current_word_embeddings.append(hidden_states_only[j])
+        
+        
         for j, token in enumerate(tokens_only):
-            clean_token = token.lstrip(prefix)
-            if prefix and token.startswith(prefix) and current_word_tokens:
-                # Aggregate embeddings for the previous word
-                word_embedding = torch.stack(current_word_embeddings).mean(dim=0)
-                word_text = tokenizer.convert_tokens_to_string(current_word_tokens)
-                results.append({"word": word_text, "embedding": word_embedding.cpu().numpy()})
+            if token.startswith(prefix):
+                clean_token = token[len(prefix):]  
+                if current_word_tokens:
+                    # Aggregate embeddings for the previous word
+                    word_embedding = torch.stack(current_word_embeddings).mean(dim=0)
+                    word_text = tokenizer.convert_tokens_to_string(current_word_tokens)
+                    results.append({"word": word_text, "embedding": word_embedding.cpu().numpy()})
                 current_word_tokens = [clean_token]
                 current_word_embeddings = [hidden_states_only[j]]
             else:
-                # Continue building the current word
-                current_word_tokens.append(clean_token)
-                current_word_embeddings.append(hidden_states_only[j])
+                clean_token = token
+                if is_punctuation(clean_token):
+                    if current_word_tokens:
+                        word_embedding = torch.stack(current_word_embeddings).mean(dim=0)
+                        word_text = tokenizer.convert_tokens_to_string(current_word_tokens)
+                        results.append({"word": word_text, "embedding": word_embedding.cpu().numpy()})
+                    word_embedding = hidden_states_only[j].cpu().numpy()
+                    results.append({"word": clean_token, "embedding": word_embedding})
+                    current_word_tokens = []
+                    current_word_embeddings = []
+                else:
+                    current_word_tokens.append(clean_token)
+                    current_word_embeddings.append(hidden_states_only[j])
 
         # Process the last word
         if current_word_tokens:
