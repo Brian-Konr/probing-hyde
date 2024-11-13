@@ -45,7 +45,7 @@ def get_embedding_from_generation(message, gen_config, model, tokenizer, device,
         
         # Extract generated token IDs (includes input)
         generated_ids = outputs.sequences[0]  # Shape: (seq_len,)
-        generated_text_full = tokenizer.decode(generated_ids, skip_special_tokens=True)
+        generated_text_full = tokenizer.decode(generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)
         logging.info(f"Full generated text: {generated_text_full}")
         
         # Re-run the model to get hidden states for the entire sequence
@@ -74,63 +74,52 @@ def get_embedding_from_generation(message, gen_config, model, tokenizer, device,
         logging.info(f"Number of generated tokens: {len(tokens_only)}")
         
         # Decode only the generated tokens
-        generated_text = tokenizer.decode(generated_ids_only, skip_special_tokens=True)
+        generated_text = tokenizer.decode(generated_ids_only, skip_special_tokens=True, clean_up_tokenization_spaces=False)
         logging.info(f"Generated text (excluding input): {generated_text}")
 
-        # Determine prefix based on tokenizer type
-        if hasattr(tokenizer, "word_tokenizer"):
-            prefix = "▁"
-        else:
-            prefix = "Ġ"
-
-        # Traverse generated tokens to aggregate word embeddings
+        # Initialize variables for processing
         results = []
-        current_word_tokens = []
-        current_word_embeddings = []
+        current_word = ''
+        current_embeddings = []
 
-        for j, token in enumerate(tokens_only):
-            # Handle tokens with newline characters
-            if '\n' in token:
-                # Split the token on newline character
-                sub_tokens = token.split('\n')
-                sub_token_embeddings = hidden_states_only[j].unsqueeze(0).repeat(len(sub_tokens), 1)
-                for k, sub_token in enumerate(sub_tokens):
-                    clean_sub_token = sub_token.lstrip(prefix)
-                    if not clean_sub_token:
-                        continue  # Skip if empty after stripping
+        # Reconstruct the text from tokens and align embeddings
+        for i, token in enumerate(tokens_only):
+            token_embedding = hidden_states_only[i]
+            token_text = tokenizer.convert_tokens_to_string([token])
+            token_text = token_text.replace(' ', '')  # Remove spaces introduced by the tokenizer
 
-                    # If current word tokens are not empty, finalize the current word
-                    if current_word_tokens:
-                        word_embedding = torch.stack(current_word_embeddings).mean(dim=0)
-                        word_text = tokenizer.convert_tokens_to_string(current_word_tokens)
-                        results.append({"word": word_text, "embedding": word_embedding.cpu().numpy()})
-                        current_word_tokens = []
-                        current_word_embeddings = []
-
-                    # Start new word with the sub_token
-                    current_word_tokens = [clean_sub_token]
-                    current_word_embeddings = [sub_token_embeddings[k]]
-            else:
-                clean_token = token.lstrip(prefix)
-                if prefix and token.startswith(prefix) and current_word_tokens:
-                    # Aggregate embeddings for the previous word
-                    word_embedding = torch.stack(current_word_embeddings).mean(dim=0)
-                    word_text = tokenizer.convert_tokens_to_string(current_word_tokens)
-                    results.append({"word": word_text, "embedding": word_embedding.cpu().numpy()})
-
-                    # Start new word
-                    current_word_tokens = [clean_token]
-                    current_word_embeddings = [hidden_states_only[j]]
+            # Use regex to split the token into words and punctuation
+            sub_tokens = re.findall(r'\w+|[^\w\s]', token_text, re.UNICODE)
+            for sub_token in sub_tokens:
+                if sub_token == '':
+                    continue
+                if re.match(r'\w+', sub_token):
+                    # It's a word or part of a word
+                    current_word += sub_token
+                    current_embeddings.append(token_embedding)
                 else:
-                    # Continue building the current word
-                    current_word_tokens.append(clean_token)
-                    current_word_embeddings.append(hidden_states_only[j])
+                    # It's punctuation or a special character
+                    if current_word != '':
+                        # Save the current word
+                        word_embedding = torch.stack(current_embeddings).mean(dim=0)
+                        results.append({"word": current_word, "embedding": word_embedding.cpu().numpy()})
+                        current_word = ''
+                        current_embeddings = []
+                    # Save the punctuation as a separate token
+                    results.append({"word": sub_token, "embedding": token_embedding.cpu().numpy()})
+            # Check if we should end the current word (e.g., at the end of a token)
+            if token_text.endswith(' ') and current_word != '':
+                word_embedding = torch.stack(current_embeddings).mean(dim=0)
+                results.append({"word": current_word, "embedding": word_embedding.cpu().numpy()})
+                current_word = ''
+                current_embeddings = []
 
-        # Process the last word
-        if current_word_tokens:
-            word_embedding = torch.stack(current_word_embeddings).mean(dim=0)
-            word_text = tokenizer.convert_tokens_to_string(current_word_tokens)
-            results.append({"word": word_text, "embedding": word_embedding.cpu().numpy()})
+        # Process any remaining word
+        if current_word != '':
+            word_embedding = torch.stack(current_embeddings).mean(dim=0)
+            results.append({"word": current_word, "embedding": word_embedding.cpu().numpy()})
+            current_word = ''
+            current_embeddings = []
 
         return {
             "generated_text": generated_text,
