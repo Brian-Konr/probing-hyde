@@ -29,8 +29,6 @@ def get_embedding_from_generation(message, gen_config, model, tokenizer, device,
     - dict: Generated text and word embeddings (excluding the input message).
     """
     try:
-        # 预处理消息，确保换行符前后有空格
-        message = message.replace('\n', ' \n ')
         
         # Tokenize the input message
         inputs = tokenizer(message, return_tensors="pt").to(device)
