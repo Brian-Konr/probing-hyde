@@ -78,12 +78,6 @@ def get_embedding_from_generation(message, gen_config, model, tokenizer, device,
         generated_text = tokenizer.decode(generated_ids_only, skip_special_tokens=True, clean_up_tokenization_spaces=False)
         logging.info(f"Generated text (excluding input): {generated_text}")
 
-        # Determine prefix based on tokenizer type
-        if hasattr(tokenizer, "word_tokenizer"):
-            prefix = "▁"
-        else:
-            prefix = "Ġ"
-
         # Initialize variables for processing
         results = []
         current_word_tokens = []
@@ -92,24 +86,39 @@ def get_embedding_from_generation(message, gen_config, model, tokenizer, device,
         # Traverse generated tokens to aggregate word embeddings
         for i, token in enumerate(tokens_only):
             token_embedding = hidden_states_only[i]
-
-            # Check if the token indicates the start of a new word
-            if token.startswith(prefix) or token in tokenizer.all_special_tokens:
-                # Save the current word
-                if current_word_tokens:
-                    word = tokenizer.convert_tokens_to_string(current_word_tokens).strip()
-                    word_embedding = torch.stack(current_word_embeddings).mean(dim=0)
-                    results.append({"word": word, "embedding": word_embedding.cpu().numpy()})
-                    current_word_tokens = []
-                    current_word_embeddings = []
-
-            # Append the token and embedding
-            current_word_tokens.append(token)
-            current_word_embeddings.append(token_embedding)
+            token_text = tokenizer.convert_tokens_to_string([token])
+            
+            # Split token_text on whitespace characters
+            sub_tokens = re.split(r'(\s+)', token_text)
+            for sub_token in sub_tokens:
+                if sub_token == '':
+                    continue
+                # Check if sub_token is whitespace
+                if sub_token.isspace():
+                    # If current_word_tokens is not empty, save the current word
+                    if current_word_tokens:
+                        word = ''.join(current_word_tokens)
+                        word_embedding = torch.stack(current_word_embeddings).mean(dim=0)
+                        results.append({"word": word, "embedding": word_embedding.cpu().numpy()})
+                        current_word_tokens = []
+                        current_word_embeddings = []
+                    # Save the whitespace as a separate token
+                    results.append({"word": sub_token, "embedding": token_embedding.cpu().numpy()})
+                else:
+                    # Check if sub_token starts with the prefix (new word)
+                    if sub_token.startswith(prefix) and current_word_tokens:
+                        # Save the current word
+                        word = ''.join(current_word_tokens)
+                        word_embedding = torch.stack(current_word_embeddings).mean(dim=0)
+                        results.append({"word": word, "embedding": word_embedding.cpu().numpy()})
+                        current_word_tokens = []
+                        current_word_embeddings = []
+                    current_word_tokens.append(sub_token)
+                    current_word_embeddings.append(token_embedding)
 
         # Save the last word
         if current_word_tokens:
-            word = tokenizer.convert_tokens_to_string(current_word_tokens).strip()
+            word = ''.join(current_word_tokens)
             word_embedding = torch.stack(current_word_embeddings).mean(dim=0)
             results.append({"word": word, "embedding": word_embedding.cpu().numpy()})
 
