@@ -118,14 +118,11 @@ def get_embedding_from_generation(message, gen_config, model, tokenizer, device,
             word_embedding = torch.stack(current_word_embeddings).mean(dim=0)
             word_text = tokenizer.convert_tokens_to_string(current_word_tokens)
             results.append({"word": word_text, "embedding": word_embedding.cpu().numpy()})
-            
-        output = {
+
+        return {
             "generated_text": generated_text,
             "word_embeddings": results
         }
-        adjust_output = adjust_probabilities(output)
-
-        return adjust_output
 
     except Exception as e:
         logging.exception(f"Error in get_embedding_from_generation: {str(e)}")
