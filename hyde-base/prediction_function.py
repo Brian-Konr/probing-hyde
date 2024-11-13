@@ -77,6 +77,13 @@ def get_embedding_from_generation(message, gen_config, model, tokenizer, device,
         # Decode only the generated tokens
         generated_text = tokenizer.decode(generated_ids_only, skip_special_tokens=True, clean_up_tokenization_spaces=False)
         logging.info(f"Generated text (excluding input): {generated_text}")
+        
+        if hasattr(tokenizer, "word_tokenizer"):
+            prefix = "▁"  
+        elif tokenizer.__class__.__name__ in ["GPT2Tokenizer", "GPT2TokenizerFast"]:
+            prefix = "Ġ"  
+        else:
+            prefix = ""  
 
         # Initialize variables for processing
         results = []
