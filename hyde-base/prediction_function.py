@@ -6,7 +6,6 @@ Created on Tue Oct 29 17:31:39 2024
 @author: paveenhuang
 """
 import os
-import re
 import torch
 import numpy as np
 from pathlib import Path
@@ -46,7 +45,7 @@ def get_embedding_from_generation(message, gen_config, model, tokenizer, device,
         
         # Extract generated token IDs (includes input)
         generated_ids = outputs.sequences[0]  # Shape: (seq_len,)
-        generated_text_full = tokenizer.decode(generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)
+        generated_text_full = tokenizer.decode(generated_ids, skip_special_tokens=True)
         logging.info(f"Full generated text: {generated_text_full}")
         
         # Re-run the model to get hidden states for the entire sequence
@@ -75,59 +74,39 @@ def get_embedding_from_generation(message, gen_config, model, tokenizer, device,
         logging.info(f"Number of generated tokens: {len(tokens_only)}")
         
         # Decode only the generated tokens
-        generated_text = tokenizer.decode(generated_ids_only, skip_special_tokens=True, clean_up_tokenization_spaces=False)
+        generated_text = tokenizer.decode(generated_ids_only, skip_special_tokens=True)
         logging.info(f"Generated text (excluding input): {generated_text}")
-        
-        if hasattr(tokenizer, "word_tokenizer"):
-            prefix = "▁"  
-        elif tokenizer.__class__.__name__ in ["GPT2Tokenizer", "GPT2TokenizerFast"]:
-            prefix = "Ġ"  
-        else:
-            prefix = ""  
 
-        # Initialize variables for processing
+        # Determine prefix based on tokenizer type
+        if hasattr(tokenizer, "word_tokenizer"):
+            prefix = "▁"
+        else:
+            prefix = "Ġ"
+
+        # Traverse generated tokens to aggregate word embeddings
         results = []
         current_word_tokens = []
         current_word_embeddings = []
 
-        # Traverse generated tokens to aggregate word embeddings
-        for i, token in enumerate(tokens_only):
-            token_embedding = hidden_states_only[i]
-            token_text = tokenizer.convert_tokens_to_string([token])
-            
-            # Split token_text on whitespace characters
-            sub_tokens = re.split(r'(\s+)', token_text)
-            for sub_token in sub_tokens:
-                if sub_token == '':
-                    continue
-                # Check if sub_token is whitespace
-                if sub_token.isspace():
-                    # If current_word_tokens is not empty, save the current word
-                    if current_word_tokens:
-                        word = ''.join(current_word_tokens)
-                        word_embedding = torch.stack(current_word_embeddings).mean(dim=0)
-                        results.append({"word": word, "embedding": word_embedding.cpu().numpy()})
-                        current_word_tokens = []
-                        current_word_embeddings = []
-                    # Save the whitespace as a separate token
-                    results.append({"word": sub_token, "embedding": token_embedding.cpu().numpy()})
-                else:
-                    # Check if sub_token starts with the prefix (new word)
-                    if sub_token.startswith(prefix) and current_word_tokens:
-                        # Save the current word
-                        word = ''.join(current_word_tokens)
-                        word_embedding = torch.stack(current_word_embeddings).mean(dim=0)
-                        results.append({"word": word, "embedding": word_embedding.cpu().numpy()})
-                        current_word_tokens = []
-                        current_word_embeddings = []
-                    current_word_tokens.append(sub_token)
-                    current_word_embeddings.append(token_embedding)
+        for j, token in enumerate(tokens_only):
+            clean_token = token.lstrip(prefix)
+            if prefix and token.startswith(prefix) and current_word_tokens:
+                # Aggregate embeddings for the previous word
+                word_embedding = torch.stack(current_word_embeddings).mean(dim=0)
+                word_text = tokenizer.convert_tokens_to_string(current_word_tokens)
+                results.append({"word": word_text, "embedding": word_embedding.cpu().numpy()})
+                current_word_tokens = [clean_token]
+                current_word_embeddings = [hidden_states_only[j]]
+            else:
+                # Continue building the current word
+                current_word_tokens.append(clean_token)
+                current_word_embeddings.append(hidden_states_only[j])
 
-        # Save the last word
+        # Process the last word
         if current_word_tokens:
-            word = ''.join(current_word_tokens)
             word_embedding = torch.stack(current_word_embeddings).mean(dim=0)
-            results.append({"word": word, "embedding": word_embedding.cpu().numpy()})
+            word_text = tokenizer.convert_tokens_to_string(current_word_tokens)
+            results.append({"word": word_text, "embedding": word_embedding.cpu().numpy()})
 
         return {
             "generated_text": generated_text,
@@ -283,6 +262,7 @@ def get_token_embeddings(statement, model, tokenizer, layer, max_seq_length=None
         results.append({"word": word_text, "embedding": word_embedding.cpu().numpy()})
 
     return results
+
 
 
 
