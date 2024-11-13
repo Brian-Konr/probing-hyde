@@ -119,7 +119,7 @@ def custom_sentence_split(text):
     sentences = [s.strip() for s in sentences if s.strip()]
     return sentences
 
-def adjust_probabilities(data, alpha=20, c=0.5):
+def adjust_probabilities(data, alpha=20, c=0.5, threshold = 0.5):
     sentences = custom_sentence_split(data["generated_text"])
     word_predictions = data["word_predictions"]
     
@@ -165,11 +165,13 @@ def adjust_probabilities(data, alpha=20, c=0.5):
         
         for i, wp in enumerate(sentence_preds):
             wp["predicted_probability"] = float(smoothed_probs[i])
+            wp["predicted_label"] = int(wp["predicted_probability"] >= threshold)
     
     updated_word_predictions = []
     for sentence_preds in sentences_word_preds:
         for wp in sentence_preds:
             updated_word_predictions.append(wp)
+            
     
     data["word_predictions"] = updated_word_predictions
     
