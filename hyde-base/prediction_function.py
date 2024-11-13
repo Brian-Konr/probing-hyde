@@ -193,11 +193,15 @@ def probe_generation(probe_path, probe_name, model, tokenizer, results):
                 "predicted_probability": float(probabilities[i]),
                 "predicted_label": int(predictions[i])
             })
-
-        return {
+            
+        data = {
             "generated_text": results["generated_text"],
             "word_predictions": word_predictions
         }
+        
+        adjusted_data = adjust_probabilities(data)
+
+        return adjusted_data
 
     except Exception as e:
         logging.exception(f"Error in probe_generation: {str(e)}")
