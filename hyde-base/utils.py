@@ -13,11 +13,11 @@ import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import numpy as np
 import re
-import nltk
+# import nltk
 from scipy.special import expit  # Sigmoid
 from scipy.ndimage import gaussian_filter1d
 
-nltk.download('punkt_tab')
+# nltk.download('punkt_tab')
 
 def load_config(json_path="config.json"):
     """
