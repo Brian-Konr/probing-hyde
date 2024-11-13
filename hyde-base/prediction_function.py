@@ -11,7 +11,9 @@ import numpy as np
 from pathlib import Path
 import logging
 from model import SAPLMAClassifier
-from utils import init_model, load_config, get_probe_path, load_threshold
+from utils import init_model, load_config, get_probe_path, load_threshold, adjust_probabilities
+
+
 
 def get_embedding_from_generation(message, gen_config, model, tokenizer, device, layer=-4):
     """
@@ -116,11 +118,14 @@ def get_embedding_from_generation(message, gen_config, model, tokenizer, device,
             word_embedding = torch.stack(current_word_embeddings).mean(dim=0)
             word_text = tokenizer.convert_tokens_to_string(current_word_tokens)
             results.append({"word": word_text, "embedding": word_embedding.cpu().numpy()})
-
-        return {
+            
+        output = {
             "generated_text": generated_text,
             "word_embeddings": results
         }
+        adjust_output = adjust_probabilities(output)
+
+        return adjust_output
 
     except Exception as e:
         logging.exception(f"Error in get_embedding_from_generation: {str(e)}")
