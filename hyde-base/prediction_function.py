@@ -78,49 +78,40 @@ def get_embedding_from_generation(message, gen_config, model, tokenizer, device,
         generated_text = tokenizer.decode(generated_ids_only, skip_special_tokens=True, clean_up_tokenization_spaces=False)
         logging.info(f"Generated text (excluding input): {generated_text}")
 
+        # Determine prefix based on tokenizer type
+        if hasattr(tokenizer, "word_tokenizer"):
+            prefix = "▁"
+        else:
+            prefix = "Ġ"
+
         # Initialize variables for processing
         results = []
-        current_word = ''
-        current_embeddings = []
+        current_word_tokens = []
+        current_word_embeddings = []
 
-        # Reconstruct the text from tokens and align embeddings
+        # Traverse generated tokens to aggregate word embeddings
         for i, token in enumerate(tokens_only):
             token_embedding = hidden_states_only[i]
-            token_text = tokenizer.convert_tokens_to_string([token])
-            token_text = token_text.replace(' ', '')  # Remove spaces introduced by the tokenizer
 
-            # Use regex to split the token into words and punctuation
-            sub_tokens = re.findall(r'\w+|[^\w\s]', token_text, re.UNICODE)
-            for sub_token in sub_tokens:
-                if sub_token == '':
-                    continue
-                if re.match(r'\w+', sub_token):
-                    # It's a word or part of a word
-                    current_word += sub_token
-                    current_embeddings.append(token_embedding)
-                else:
-                    # It's punctuation or a special character
-                    if current_word != '':
-                        # Save the current word
-                        word_embedding = torch.stack(current_embeddings).mean(dim=0)
-                        results.append({"word": current_word, "embedding": word_embedding.cpu().numpy()})
-                        current_word = ''
-                        current_embeddings = []
-                    # Save the punctuation as a separate token
-                    results.append({"word": sub_token, "embedding": token_embedding.cpu().numpy()})
-            # Check if we should end the current word (e.g., at the end of a token)
-            if token_text.endswith(' ') and current_word != '':
-                word_embedding = torch.stack(current_embeddings).mean(dim=0)
-                results.append({"word": current_word, "embedding": word_embedding.cpu().numpy()})
-                current_word = ''
-                current_embeddings = []
+            # Check if the token indicates the start of a new word
+            if token.startswith(prefix) or token in tokenizer.all_special_tokens:
+                # Save the current word
+                if current_word_tokens:
+                    word = tokenizer.convert_tokens_to_string(current_word_tokens).strip()
+                    word_embedding = torch.stack(current_word_embeddings).mean(dim=0)
+                    results.append({"word": word, "embedding": word_embedding.cpu().numpy()})
+                    current_word_tokens = []
+                    current_word_embeddings = []
 
-        # Process any remaining word
-        if current_word != '':
-            word_embedding = torch.stack(current_embeddings).mean(dim=0)
-            results.append({"word": current_word, "embedding": word_embedding.cpu().numpy()})
-            current_word = ''
-            current_embeddings = []
+            # Append the token and embedding
+            current_word_tokens.append(token)
+            current_word_embeddings.append(token_embedding)
+
+        # Save the last word
+        if current_word_tokens:
+            word = tokenizer.convert_tokens_to_string(current_word_tokens).strip()
+            word_embedding = torch.stack(current_word_embeddings).mean(dim=0)
+            results.append({"word": word, "embedding": word_embedding.cpu().numpy()})
 
         return {
             "generated_text": generated_text,
