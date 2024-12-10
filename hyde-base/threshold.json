@@ -4,8 +4,5 @@
     "meta-llama_Llama-3.2-3B-Instruct_4_combined": 0.5345474481582642,
     "meta-llama_Llama-3.1-8B-Instruct_4_combined": 0.5002859234809875,
     "meta-llama_Llama-3.1-8B-Instruct_all-conj": 0.5123482346534729,
-    "facebook_opt-2.7b_4_combined": 0.4521090090274811,
-    "facebook_opt-350m_4_combined": 0.5341783165931702,
-    "facebook_opt-1.3b_4_combined": 0.601897656917572,
-    "facebook_opt-6.7b_4_combined": 0.4795781970024109
+    "meta-llama_Llama-3.1-8B-Instruct_all-conj_ATTSE1DCNN_head8_dropout0.1": 0.5102
 }
