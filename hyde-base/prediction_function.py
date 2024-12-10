@@ -14,7 +14,6 @@ from model import SAPLMAClassifier
 from utils import init_model, load_config, get_probe_path, load_threshold, adjust_probabilities
 
 
-
 def get_embedding_from_generation(message, gen_config, model, tokenizer, device, layer=-4):
     """
     Generate text and extract word embeddings from the hidden states.
@@ -277,8 +276,6 @@ def get_token_embeddings(statement, model, tokenizer, layer, max_seq_length=None
         results.append({"word": word_text, "embedding": word_embedding.cpu().numpy()})
 
     return results
-
-
 
 
 def probe(statements, model_name, layer, token=None):
