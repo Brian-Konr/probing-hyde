@@ -129,8 +129,7 @@ def get_embedding_from_generation(message, gen_config, model, tokenizer, device)
 
 
 # Global cache for probe models
-probe_models_cache = {}
-        
+probe_models_cache = {}       
 
 def probe_generation(probe_path, probe_name, model, tokenizer, results):
     """
@@ -178,7 +177,7 @@ def probe_generation(probe_path, probe_name, model, tokenizer, results):
         # Make predictions in batch
         with torch.no_grad():
             outputs = probe_model(embeddings_tensor)  # Shape: (num_words, 1)
-            probabilities = outputs.cpu().numpy().ravel() # Shape: (num_words,)
+            probabilities = torch.sigmoid(outputs).cpu().numpy().ravel() # Shape: (num_words,)
             predictions = (probabilities >= threshold).astype(int) # Shape: (num_words,)
         
         # Add predictions to words without embedding
@@ -195,8 +194,7 @@ def probe_generation(probe_path, probe_name, model, tokenizer, results):
             "word_predictions": word_predictions
         }
         
-        adjusted_data = data
-        # adjusted_data = adjust_probabilities(data)
+        adjusted_data = adjust_probabilities(data)
 
         return adjusted_data
 
