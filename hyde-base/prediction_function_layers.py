@@ -173,7 +173,7 @@ def probe_generation(probe_path, probe_name, model, tokenizer, results):
         
         # Prepare embeddings for batch processing
         embeddings = np.array([word_data["embedding"] for word_data in results["word_embeddings"]])
-        embeddings_tensor = torch.tensor(embeddings, dtype=torch.float16).to(model.device)
+        embeddings_tensor = torch.tensor(embeddings, dtype=torch.float32).to(model.device)
 
         # Make predictions in batch
         with torch.no_grad():
