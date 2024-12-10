@@ -7,7 +7,7 @@ from pydantic import BaseModel
 import logging
 import os
 
-from prediction_function import get_embedding_from_generation, probe_generation, download_model
+from prediction_function import get_embedding_from_generation, probe_generation
 
 # Set up logging
 logging.basicConfig(filename='lm_backend.log', level=logging.ERROR,
@@ -22,13 +22,13 @@ class ChatRequest(BaseModel):
 
 # Load the model and pipeline only once when the server starts
 model_id = "meta-llama/Meta-Llama-3.1-8B-Instruct"
-# probe_name = "meta-llama_Llama-3.1-8B-Instruct_4_all-conj.pt"
+probe_name = "meta-llama_Llama-3.1-8B-Instruct_4_all-conj.pt"
 drive_link = "https://drive.google.com/file/d/15CypPj205eGnBDq7QfiDVXYOArgTQA9Z/view?usp=drive_link"
-probe_name = "meta-llama_Llama-3.1-8B-Instruct_all-conj_ATTSE1DCNN_head8_dropout0.1.pt"
+# probe_name = "meta-llama_Llama-3.1-8B-Instruct_all-conj_ATTSE1DCNN_head8_dropout0.1.pt"
 probe_path = os.path.join(os.getcwd(), probe_name)
 # layer = -4
  
-download_model(drive_link, probe_path)
+# download_model(drive_link, probe_path)
 
 ####################################################################################
 # pipeline = transformers.pipeline(
