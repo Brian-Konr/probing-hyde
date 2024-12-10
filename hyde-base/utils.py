@@ -119,6 +119,7 @@ def custom_sentence_split(text):
     sentences = [s.strip() for s in sentences if s.strip()]
     return sentences
 
+
 def adjust_probabilities(data, alpha=20, c=0.5, threshold = 0.5):
     sentences = custom_sentence_split(data["generated_text"])
     word_predictions = data["word_predictions"]
