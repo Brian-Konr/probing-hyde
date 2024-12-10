@@ -195,7 +195,8 @@ def probe_generation(probe_path, probe_name, model, tokenizer, results):
             "word_predictions": word_predictions
         }
         
-        adjusted_data = adjust_probabilities(data)
+        adjusted_data = data
+        # adjusted_data = adjust_probabilities(data)
 
         return adjusted_data
 
