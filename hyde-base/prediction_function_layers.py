@@ -208,36 +208,36 @@ if __name__ == "__main__":
 
     download_model(drive_link, model_local_path)
 
-    # # model and tokenizer
-    # model_id = "meta-llama/Meta-Llama-3.1-8B-Instruct"  
-    # tokenizer = AutoTokenizer.from_pretrained(model_id)
+    # model and tokenizer
+    model_id = "meta-llama/Meta-Llama-3.1-8B-Instruct"  
+    tokenizer = AutoTokenizer.from_pretrained(model_id)
 
-    # model = AutoModelForCausalLM.from_pretrained(
-    #     model_id,
-    #     torch_dtype=torch.float16,  # 根据实际情况修改
-    #     device_map="auto",
-    #     output_hidden_states=True
-    # )
-    # model.eval()
+    model = AutoModelForCausalLM.from_pretrained(
+        model_id,
+        torch_dtype=torch.float16,  # 根据实际情况修改
+        device_map="auto",
+        output_hidden_states=True
+    )
+    model.eval()
 
-    # # input sample
-    # message = "What is the capital of France?"
-    # gen_config = {
-    #     "max_length": 50,
-    #     "num_return_sequences": 1,
-    #     "do_sample": True,
-    #     "top_k": 50,
-    #     "top_p": 0.95
-    # }
+    # input sample
+    message = "What is the capital of France?"
+    gen_config = {
+        "max_length": 50,
+        "num_return_sequences": 1,
+        "do_sample": True,
+        "top_k": 50,
+        "top_p": 0.95
+    }
 
-    # # get embedding
-    # embeddings_results = get_embedding_from_generation(message, gen_config, model, tokenizer, device="cuda" if torch.cuda.is_available() else "cpu")
+    # get embedding
+    embeddings_results = get_embedding_from_generation(message, gen_config, model, tokenizer, device="cuda" if torch.cuda.is_available() else "cpu")
 
-    # # set probe
-    # probe_path = "/data2/paveen/probing-hyde/hyde-base/meta-llama_Llama-3.1-8B-Instruct_all-conj_ATTSE1DCNN_head8_dropout0.1.pt"
-    # probe_name = "meta-llama_Llama-3.1-8B-Instruct_all-conj_ATTSE1DCNN_head8_dropout0.1.pt"
+    # set probe
+    probe_path = "/data2/paveen/probing-hyde/hyde-base/meta-llama_Llama-3.1-8B-Instruct_all-conj_ATTSE1DCNN_head8_dropout0.1.pt"
+    probe_name = "meta-llama_Llama-3.1-8B-Instruct_all-conj_ATTSE1DCNN_head8_dropout0.1.pt"
 
-    # probe_results = probe_generation(probe_path, probe_name, model, tokenizer, embeddings_results)
+    probe_results = probe_generation(probe_path, probe_name, model, tokenizer, embeddings_results)
 
-    # # output
-    # print(probe_results)
+    # output
+    print(probe_results)
