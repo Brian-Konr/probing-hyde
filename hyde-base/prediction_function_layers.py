@@ -5,11 +5,35 @@ Created on Tue Dec 10 10:20:52 2024
 
 @author: paveenhuang
 """
+
+import os
 import torch
 import numpy as np
+import gdown
 import logging
 from model import AttentionMLPSE1DCNN
 from utils import load_threshold, adjust_probabilities
+
+
+def download_model(drive_link, output_path):
+    """
+    Download the model file from Google Drive.
+    Parameters:
+    - drive_link (str): drive_link (str): Google Drive shared link.
+    - output_path (str): Local save path of the model file.
+    """
+    try:
+        if not os.path.exists(output_path):
+            file_id = drive_link.split('/d/')[1].split('/')[0]
+            download_url = f"https://drive.google.com/uc?id={file_id}"
+            logging.info(f"Downloading model from {download_url} to {output_path}...")
+            gdown.download(download_url, output_path, quiet=False)
+            logging.info("Model downloaded successfully.")
+        else:
+            logging.info(f"Model file already exists at {output_path}. Skipping download.")
+    except Exception as e:
+        logging.exception(f"Error downloading the model: {str(e)}")
+        raise e
 
 
 def get_embedding_from_generation(message, gen_config, model, tokenizer, device):
@@ -102,6 +126,7 @@ def get_embedding_from_generation(message, gen_config, model, tokenizer, device)
 
 # Global cache for probe models
 probe_models_cache = {}
+        
 
 def probe_generation(probe_path, probe_name, model, tokenizer, results):
     """
@@ -173,3 +198,46 @@ def probe_generation(probe_path, probe_name, model, tokenizer, results):
     except Exception as e:
         logging.exception(f"Error in probe_generation: {str(e)}")
         raise e
+
+if __name__ == "__main__":
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+
+    # Set the model download link and local path
+    drive_link = "https://drive.google.com/file/d/15CypPj205eGnBDq7QfiDVXYOArgTQA9Z/view?usp=drive_link"
+    model_local_path = "/data2/paveen/probing-hyde/hyde-base/meta-llama_Llama-3.1-8B-Instruct_all-conj_ATTSE1DCNN_head8_dropout0.1.pt"
+
+    download_model(drive_link, model_local_path)
+
+    # # model and tokenizer
+    # model_id = "meta-llama/Meta-Llama-3.1-8B-Instruct"  
+    # tokenizer = AutoTokenizer.from_pretrained(model_id)
+
+    # model = AutoModelForCausalLM.from_pretrained(
+    #     model_id,
+    #     torch_dtype=torch.float16,  # 根据实际情况修改
+    #     device_map="auto",
+    #     output_hidden_states=True
+    # )
+    # model.eval()
+
+    # # input sample
+    # message = "What is the capital of France?"
+    # gen_config = {
+    #     "max_length": 50,
+    #     "num_return_sequences": 1,
+    #     "do_sample": True,
+    #     "top_k": 50,
+    #     "top_p": 0.95
+    # }
+
+    # # get embedding
+    # embeddings_results = get_embedding_from_generation(message, gen_config, model, tokenizer, device="cuda" if torch.cuda.is_available() else "cpu")
+
+    # # set probe
+    # probe_path = "/data2/paveen/probing-hyde/hyde-base/meta-llama_Llama-3.1-8B-Instruct_all-conj_ATTSE1DCNN_head8_dropout0.1.pt"
+    # probe_name = "meta-llama_Llama-3.1-8B-Instruct_all-conj_ATTSE1DCNN_head8_dropout0.1.pt"
+
+    # probe_results = probe_generation(probe_path, probe_name, model, tokenizer, embeddings_results)
+
+    # # output
+    # print(probe_results)
