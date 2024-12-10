@@ -55,14 +55,18 @@ def get_embedding_from_generation(message, gen_config, model, tokenizer, device)
                 **inputs,
                 **gen_config,  # Pass gen_config first
                 return_dict_in_generate=True,  # Override with desired value
-                output_hidden_states=True, # Ensure output_hidden_states is set appropriately
+                output_hidden_states=False, # Ensure output_hidden_states is set appropriately
                 pad_token_id=tokenizer.eos_token_id
             )
         
         # Extract generated token IDs (includes input)
         generated_ids = outputs.sequences[0]  # Shape: (seq_len,)
         
-        all_layer_hidden_states = outputs.hidden_states[1:] # skip embedding layer
+        # Re-run the model to get hidden states for the entire sequence
+        with torch.no_grad():
+            model_outputs = model(generated_ids.unsqueeze(0), output_hidden_states=True)
+        
+        all_layer_hidden_states = model_outputs.hidden_states[1:] # skip embedding layer
         num_layers = len(all_layer_hidden_states)
         
         tokens = tokenizer.convert_ids_to_tokens(generated_ids)
