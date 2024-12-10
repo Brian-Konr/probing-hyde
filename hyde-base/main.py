@@ -1,13 +1,13 @@
-import transformers
+# import transformers
+# from transformers import GenerationConfig
 import torch
-from transformers import GenerationConfig
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import logging
 import os
 
-from prediction_function import get_embedding_from_generation, probe_generation
+from prediction_function_layers import get_embedding_from_generation, probe_generation
 
 # Set up logging
 logging.basicConfig(filename='lm_backend.log', level=logging.ERROR,
@@ -22,9 +22,11 @@ class ChatRequest(BaseModel):
 
 # Load the model and pipeline only once when the server starts
 model_id = "meta-llama/Meta-Llama-3.1-8B-Instruct"
-probe_name = "meta-llama_Llama-3.1-8B-Instruct_4_all-conj.pt"
+# probe_name = "meta-llama_Llama-3.1-8B-Instruct_4_all-conj.pt"
+probe_name = "meta-llama_Llama-3.1-8B-Instruct_all-conj_ATTSE1DCNN_head8_dropout0.1.pt"
 probe_path = os.path.join(os.getcwd(), probe_name)
-layer = -4
+# layer = -4
+ 
 
 ####################################################################################
 # pipeline = transformers.pipeline(
@@ -77,7 +79,7 @@ async def generate_text(request: ChatRequest):
             model=model,
             tokenizer=tokenizer,
             device=model.device,
-            layer=layer  
+            # layer=layer  
         )
         
         response = probe_generation(
