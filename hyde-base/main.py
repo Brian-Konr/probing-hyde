@@ -7,7 +7,7 @@ from pydantic import BaseModel
 import logging
 import os
 
-from prediction_function_layers import get_embedding_from_generation, probe_generation, download_model
+from prediction_function import get_embedding_from_generation, probe_generation, download_model
 
 # Set up logging
 logging.basicConfig(filename='lm_backend.log', level=logging.ERROR,
